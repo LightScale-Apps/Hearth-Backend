@@ -31,18 +31,17 @@ namespace api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == loginDto.Username.ToLower());
+            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == loginDto.Email.ToLower());
 
-            if (user == null) return Unauthorized("Invalid username!");
+            if (user == null) return Unauthorized("Invalid login");
 
             var result = await _signinManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
-            if (!result.Succeeded) return Unauthorized("Username not found and/or password incorrect");
+            if (!result.Succeeded) return Unauthorized("Invalid login");
 
             return Ok(
                 new NewUserDto
                 {
-                    UserName = user.UserName,
                     Email = user.Email,
                     Token = _tokenService.CreateToken(user)
                 }
@@ -59,7 +58,6 @@ namespace api.Controllers
 
                 var appUser = new AppUser
                 {
-                    UserName = registerDto.Username,
                     Email = registerDto.Email
                 };
 
@@ -67,13 +65,14 @@ namespace api.Controllers
 
                 if (createdUser.Succeeded)
                 {
+                    
+                    
                     var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
                     if (roleResult.Succeeded)
                     {
                         return Ok(
                             new NewUserDto
                             {
-                                UserName = appUser.UserName,
                                 Email = appUser.Email,
                                 Token = _tokenService.CreateToken(appUser)
                             }
