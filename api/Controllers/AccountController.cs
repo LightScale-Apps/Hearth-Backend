@@ -66,7 +66,6 @@ namespace api.Controllers
                 if (createdUser.Succeeded)
                 {
                     
-                    
                     var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
                     if (roleResult.Succeeded)
                     {
@@ -85,12 +84,12 @@ namespace api.Controllers
                 }
                 else
                 {
-                    return StatusCode(500, createdUser.Errors);
+                    return StatusCode(501, createdUser.Errors);
                 }
             }
             catch (Exception e)
             {
-                return StatusCode(500, e);
+                return StatusCode(502, e);
             }
         }
     }
