@@ -31,6 +31,16 @@ namespace api.Repository
             return dataList;
         }
 
+        public async Task<List<PatientData>> GetPropertyAsync(string userId, string property)
+        {
+            var data = _context.PatientData.AsQueryable();
+            data = data.Where(s => s.OwnedBy.Equals(userId) && s.Property.Equals(property));
+
+            var dataList = await data.ToListAsync();
+
+            return dataList;
+        }
+
         public async Task<PatientData> CreateAsync(PatientData patientDataModel)
         {
             await _context.PatientData.AddAsync(patientDataModel);

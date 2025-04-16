@@ -42,6 +42,20 @@ namespace api.Controllers
             return Ok(dataList.ToJSON());
         }
 
+         [HttpGet]
+        public async Task<IActionResult> GetPatientData([FromRoute] string property)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            
+            var userId = User.FindFirst(ClaimTypes.GivenName)?.Value;
+            var dataList = await _dataRepo.GetPropertyAsync(userId, property);
+
+            if (dataList == null) return NotFound();
+
+            return Ok(dataList.ToJSON());
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddPatientData([FromBody] JSONDataDto dataDto)
         {

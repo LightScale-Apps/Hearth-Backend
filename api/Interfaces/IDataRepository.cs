@@ -10,6 +10,7 @@ namespace api.Interfaces
     public interface IDataRepository
     {
         Task<List<PatientData>> GetAllAsync(string userId);
+        Task<List<PatientData>> GetPropertyAsync(string userId, string property);
         Task<PatientData> CreateAsync(PatientData patientDataModel);
 
     }
