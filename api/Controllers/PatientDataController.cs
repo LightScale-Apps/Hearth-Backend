@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
 using api.Dtos.PatientData;
-using api.Helpers;
 using api.Interfaces;
 using api.Mappers;
 using api.Models;
