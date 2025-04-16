@@ -18,6 +18,7 @@ namespace api.Mappers
 
             foreach (PatientData item in dataList) {
 
+                //make array
                 returnItem[item.Property] = item.Value;
             }
 

@@ -43,7 +43,8 @@ namespace api.Controllers
         }
 
          [HttpGet]
-        public async Task<IActionResult> GetPatientData([FromRoute] string property)
+         [Route("{property}")]
+        public async Task<IActionResult> GetPatientDataWithProperty([FromRoute] string property)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
