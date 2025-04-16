@@ -54,7 +54,7 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("LocalConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("LaptopConnection"));
 });
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -102,7 +102,9 @@ var app = builder.Build();
 //if (app.Environment.IsDevelopment())
 //{
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(option => {
+        option.EnableTryItOutByDefault();
+    });
 //}
 
 
