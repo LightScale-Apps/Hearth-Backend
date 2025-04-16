@@ -54,7 +54,7 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("RealConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("LocalConnection"));
 });
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
