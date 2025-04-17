@@ -38,7 +38,7 @@ namespace api.Controllers
 
             if (dataList == null) return NotFound();
 
-            return Ok(dataList.ToJSON());
+            return Ok(dataList);
         }
         [HttpGet]
         [Route("list-users")]
