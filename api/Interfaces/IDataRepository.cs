@@ -11,6 +11,7 @@ namespace api.Interfaces
     {
         Task<List<PatientData>> GetAllAsync(string userId);
         Task<List<PatientData>> DebugGetAllAsync();
+        Task<List<AppUser>> DebugListUsersAsync();
         Task<List<PatientData>> GetPropertyAsync(string userId, string property);
         Task<PatientData> CreateAsync(PatientData patientDataModel);
 

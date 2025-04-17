@@ -28,7 +28,7 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        [Route("/get-all-data")]
+        [Route("get-all-data")]
         public async Task<IActionResult> DebugGetAllAsync()
         {
             if (!ModelState.IsValid)
@@ -39,6 +39,19 @@ namespace api.Controllers
             if (dataList == null) return NotFound();
 
             return Ok(dataList.ToJSON());
+        }
+        [HttpGet]
+        [Route("list-users")]
+        public async Task<IActionResult> DebugListUsersAsync()
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+        
+            var dataList = await _dataRepo.DebugListUsersAsync();
+
+            if (dataList == null) return NotFound();
+
+            return Ok(dataList);
         }
     }
 }
