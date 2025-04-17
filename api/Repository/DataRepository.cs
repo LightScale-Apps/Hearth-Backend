@@ -31,6 +31,12 @@ namespace api.Repository
             return dataList;
         }
 
+        public async Task<List<PatientData>> DebugGetAllAsync()
+        {
+            var data = _context.PatientData.AsQueryable();
+
+            return await data.ToListAsync();
+        }
         public async Task<List<PatientData>> GetPropertyAsync(string userId, string property)
         {
             var data = _context.PatientData.AsQueryable();
