@@ -41,6 +41,19 @@ namespace api.Controllers
             return Ok(dataList);
         }
         [HttpGet]
+        [Route("get-data-by-id/{userId}")]
+        public async Task<IActionResult> DebugGetByIdAsync([FromRoute] string userId)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+        
+            var dataList = await _dataRepo.GetAllAsync(userId);
+
+            if (dataList == null) return NotFound();
+
+            return Ok(dataList);
+        }
+        [HttpGet]
         [Route("list-users")]
         public async Task<IActionResult> DebugListUsersAsync()
         {
