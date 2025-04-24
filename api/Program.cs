@@ -10,7 +10,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.WebSockets;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,7 +55,7 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("LaptopConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("LocalConnection"));
 });
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -99,6 +98,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddSingleton<ChatService>();
 
+
 var app = builder.Build();
 
 app.UseWebSockets();
@@ -115,12 +115,7 @@ app.UseWebSockets();
 
 //app.UseHttpsRedirection();
 
-app.UseCors(x => x
-     .AllowAnyMethod()
-     .AllowAnyHeader()
-     .AllowCredentials()
-      //.WithOrigins("https://localhost:44351))
-      .SetIsOriginAllowed(origin => true));
+app.UseCors("AllowAnyOrigin");
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -129,18 +124,16 @@ app.MapControllers();
 
 app.MapGet("/chat", async (HttpContext context, ChatService chatService) =>
 {
-    if (context.WebSockets.IsWebSocketRequest)
-    {
-        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-        await chatService.HandleWebSocketConnection(webSocket);
-    }
-    else
-    {
-        context.Response.StatusCode = 400;
-        await context.Response.WriteAsync("Expected a WebSocket request");
-    }
-});
+    var identity = context.User.Identity;
 
+
+    if (identity != null) await context.Response.WriteAsync(identity.ToString());
+    else await context.Response.WriteAsync(context.User.Identity.ToString());
+
+    if (context.WebSockets.IsWebSocketRequest) {
+        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+        await chatService.HandleWebSocketConnection(webSocket, "id");  
+    }
+}).RequireAuthorization();
 
 app.Run();
-

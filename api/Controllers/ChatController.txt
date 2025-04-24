@@ -1,0 +1,50 @@
+using System;
+using System.Security.Claims;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using api.Data;
+using api.Dtos.PatientData;
+using api.Interfaces;
+using api.Mappers;
+using api.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using api.Service;
+
+namespace api.Controllers
+{
+    [Route("chat")]
+    [Authorize]
+    [ApiController]
+    public class ChatController : ControllerBase
+    {
+        private readonly ApplicationDBContext _context;
+        private readonly ChatService _chatService;
+        public ChatController(ApplicationDBContext context, ChatService chatService)
+        {
+            _context = context;
+            _chatService = chatService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConnectToChat() {
+            if (HttpContext.WebSockets.IsWebSocketRequest) {
+                var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                await _chatService.HandleWebSocketConnection(webSocket);
+                
+                return new ContentResult {
+                    ContentType = "text/html",
+                    Content = ""
+                };
+            } else {
+                return new ContentResult {
+                    ContentType = "text/html",
+                    Content = ""
+                };
+            }
+        }
+    }
+}

@@ -15,7 +15,7 @@ namespace api.Service {
     {
         private readonly List<WebSocket> _sockets = new();
         
-        public async Task HandleWebSocketConnection(WebSocket socket)
+        public async Task HandleWebSocketConnection(WebSocket socket, string userId)
         {
             _sockets.Add(socket);
             var buffer = new byte[1024 * 2];
