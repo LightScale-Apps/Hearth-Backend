@@ -94,6 +94,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<IDataRepository, DataRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 
 var app = builder.Build();

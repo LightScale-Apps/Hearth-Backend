@@ -5,9 +5,15 @@ using System.Threading.Tasks;
 using api.Dtos.Account;
 using api.Interfaces;
 using api.Models;
+using api.Data;
+using api.Dtos.PatientData;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Mail;
+using Org.BouncyCastle.Asn1.Esf;
+using Org.BouncyCastle.Bcpg;
 
 namespace api.Controllers
 {
@@ -18,34 +24,17 @@ namespace api.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly ITokenService _tokenService;
         private readonly SignInManager<AppUser> _signinManager;
-        public AccountController(UserManager<AppUser> userManager, ITokenService tokenService, SignInManager<AppUser> signInManager)
-        {
+        private readonly IEmailSender _emailSender;
+        public AccountController(
+            UserManager<AppUser> userManager, 
+            ITokenService tokenService, 
+            SignInManager<AppUser> signInManager,
+            IEmailSender emailSender
+        ){
             _userManager = userManager;
             _tokenService = tokenService;
             _signinManager = signInManager;
-        }
-
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto loginDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == loginDto.Email.ToLower());
-
-            if (user == null) return Unauthorized("Invalid login");
-
-            var result = await _signinManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
-
-            if (!result.Succeeded) return Unauthorized("Invalid login");
-
-            return Ok(
-                new NewUserDto
-                {
-                    Email = user.Email,
-                    Token = _tokenService.CreateToken(user)
-                }
-            );
+            _emailSender = emailSender;
         }
 
         [HttpPost("register")]
@@ -59,7 +48,9 @@ namespace api.Controllers
                 var appUser = new AppUser
                 {
                     Email = registerDto.Email,
-                    UserName = registerDto.Email
+                    UserName = registerDto.Email,
+                    PhoneNumber = registerDto.PhoneNumber,
+                    EmailConfirmed = true
                 };
 
                 var createdUser = await _userManager.CreateAsync(appUser, registerDto.Password);
@@ -67,7 +58,9 @@ namespace api.Controllers
                 if (createdUser.Succeeded)
                 {
                     
+                    await _userManager.SetTwoFactorEnabledAsync(appUser, true);
                     var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
+
                     if (roleResult.Succeeded)
                     {
                         return Ok(
@@ -93,5 +86,9 @@ namespace api.Controllers
                 return StatusCode(502, e);
             }
         }
+
+    
+
+    
     }
 }

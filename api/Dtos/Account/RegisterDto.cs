@@ -13,5 +13,8 @@ namespace api.Dtos.Account
         public string? Email { get; set; }
         [Required]
         public string? Password { get; set; }
+        [Required]
+        [RegularExpression(@"^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$", ErrorMessage = "Invalid Phone Number")]
+        public string? PhoneNumber { get; set; }
     }
 }
