@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.WebSockets;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,7 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
+
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
@@ -54,7 +56,7 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("LocalConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("LaptopConnection"));
 });
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -95,9 +97,11 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<IDataRepository, DataRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
-
+builder.Services.AddSingleton<ChatService>();
 
 var app = builder.Build();
+
+app.UseWebSockets();
 
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
@@ -122,6 +126,21 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("/chat", async (HttpContext context, ChatService chatService) =>
+{
+    if (context.WebSockets.IsWebSocketRequest)
+    {
+        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+        await chatService.HandleWebSocketConnection(webSocket);
+    }
+    else
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsync("Expected a WebSocket request");
+    }
+});
+
 
 app.Run();
 
