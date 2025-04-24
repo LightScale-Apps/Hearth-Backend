@@ -63,13 +63,7 @@ namespace api.Controllers
 
                     if (roleResult.Succeeded)
                     {
-                        return Ok(
-                            new NewUserDto
-                            {
-                                Email = appUser.Email,
-                                Token = _tokenService.CreateToken(appUser)
-                            }
-                        );
+                        return Ok("Account created. You may now Log in.");
                     }
                     else
                     {
