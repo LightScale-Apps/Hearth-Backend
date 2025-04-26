@@ -1,9 +1,9 @@
 class APIConnection {
-  constructor(email, password) {
+  constructor() {
     this.URL = "http://ec2-18-189-105-20.us-east-2.compute.amazonaws.com/api/";
     this.token = "";
-    this.email = email;
-    this.password = password;
+    this.email = "";
+    this.password = "";
   }
 
   async request(url) {
@@ -45,4 +45,16 @@ class APIConnection {
   }
 }
 
-api = new APIConnection("ryanbhillis@gmail.com", "mypasswordsuXXX:3");
+//Usage:
+
+user = new APIConnection(); //create new connection object
+
+user.email = "ryanbhillis@gmail.com";
+user.password = "mypasswordsuXXX:3";
+
+user.getOneTimeCode(); //takes their username and password and sends to server
+
+//the line below will get the token from the server using the OTC
+//user.getAccessToken("187613.18273681.1823763.1872638");
+
+console.log(user.token); //here is the token
