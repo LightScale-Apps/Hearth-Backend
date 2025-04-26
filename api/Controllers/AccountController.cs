@@ -39,21 +39,22 @@ namespace api.Controllers
 
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(string email) {
-            
+
             var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == email);
+            if (user == null) return Ok("A recovery code has been sent to your email address");
+
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
             _emailSender.SendEmailAsync(user.Email, "HEARTH - Reset Password", token);
-
-            return Ok("Password reset Email sent");
+            return Ok("A recovery code has been sent to your email address");
         }
 
-        [HttpPost("forgot-password/reset")]
-        public async Task<IActionResult> ForgotPassword(string email, string token, string newPassword) {
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(string email, string token, string newPassword) {
             
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == email);
 
-            _userManager.ResetPasswordAsync(user, token, newPassword);
+            await _userManager.ResetPasswordAsync(user, token, newPassword);
+            await _userManager.UpdateAsync(user);
 
             return Ok("Password reset");
         }
