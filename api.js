@@ -4,6 +4,7 @@ class APIConnection {
     this.token = "";
     this.email = "";
     this.password = "";
+    this.data = {};
   }
 
   async request(url) {
@@ -43,6 +44,19 @@ class APIConnection {
     let data = await response.json();
     this.token = data.token;
   }
+
+  async getPatientData() {
+    let response = await fetch(this.URL + "patient", {
+      method: "GET",
+      headers: {
+        Accept: "*/*",
+        Authorization: `Bearer ${this.token}`,
+      },
+    });
+
+    let dataObject = await response.json();
+    this.data = dataObject;
+  }
 }
 
 //Usage:
@@ -55,6 +69,11 @@ user.password = "mypasswordsuXXX:3";
 user.getOneTimeCode(); //takes their username and password and sends to server
 
 //the line below will get the token from the server using the OTC
-//user.getAccessToken("187613.18273681.1823763.1872638");
+//user.getAccessToken("6752");
+
+user.getPatientData();
+
+//the data is stored in the user object
+console.log(user.data);
 
 console.log(user.token); //here is the token
