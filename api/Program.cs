@@ -95,7 +95,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddCors(options =>
     {
-        options.AddPolicy("AllowSpecificOrigins", // The policy name...
+        options.AddPolicy("Policy1", // The policy name...
             builder =>
             {
                 // Welcome! Requests from these domains can access my party (web application)...
@@ -128,7 +128,7 @@ app.UseWebSockets();
 
 //app.UseHttpsRedirection();
 
-app.UseCors("AllowSpecificOrigins");
+app.UseCors("Policy1");
 
 app.UseAuthentication();
 app.UseAuthorization();
