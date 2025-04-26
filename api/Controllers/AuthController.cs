@@ -55,11 +55,9 @@ namespace api.Controllers
             if (!result.Succeeded) return Unauthorized("Invalid login");
 
             var generator = new Random();
+
             
-            user.OTC = generator.Next().ToString() + "." + 
-                       generator.Next().ToString() + "." + 
-                       generator.Next().ToString() + "." + 
-                       generator.Next().ToString();
+            user.OTC = generator.Next(0, 9).ToString() + generator.Next(0, 9).ToString() + generator.Next(0, 9).ToString() + generator.Next(0, 9).ToString();
             
             await _emailSender.SendEmailAsync(user.Email, "Hearth - One-Time Code", user.OTC);
 
