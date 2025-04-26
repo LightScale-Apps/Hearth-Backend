@@ -81,6 +81,13 @@ class APIConnection {
       body: JSON.stringify(dataObject),
     });
   }
+
+  async getModelResponse(input) {
+    if (this.chatConnection.state !== "Connected") {
+      await this.chatConnection.start();
+    }
+    return this.chatConnection.invoke("SendMessage", input);
+  }
 }
 
 //Usage:

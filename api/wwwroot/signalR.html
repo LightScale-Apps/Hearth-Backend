@@ -18,28 +18,136 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
     <script type="text/javascript">
 
-      function tokenValue() {
-        return "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJ5YW5iaGlsbGlzQGdtYWlsLmNvbSIsImdpdmVuX25hbWUiOiIxNjc2ZGQ0My02ZjFmLTRkMjctYTVlNS1mYWUzNjEwNGNiMTUiLCJuYmYiOjE3NDU2OTg3MjUsImV4cCI6MTc0NjMwMzUyNSwiaWF0IjoxNzQ1Njk4NzI1LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjUyNDYiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUyNDYifQ.x7DSCW2hGzwYgiGb6ejIDkULm3SvkrjArjdcREjQJsOnmZBWCO72aDt6HNE-SzHMigoPNFjlVPjatAcd2i9feA";
-      }
+class APIConnection {
+  constructor() {
+    this.URL = "http://ec2-18-189-105-20.us-east-2.compute.amazonaws.com/api/";
+    this.token = "";
+    this.email = "";
+    this.password = "";
+    this.data = {};
+    this.chatConnection = new signalR.HubConnectionBuilder()
+      .withUrl("/chat", { accessTokenFactory: () => this.token })
+      .build();
+  }
 
-      const connection = new signalR.HubConnectionBuilder()
-          .withUrl("/chat", { accessTokenFactory: () => tokenValue()})
-          .build();
+  async request(url) {
+    const res = await fetch(this.URL + url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        accept: "*/*",
+      },
+      body: "",
+    });
+    return await res;
+  }
+
+  async getOneTimeCode() {
+    const res = await fetch(this.URL + "auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      body: `{
+        "email": "${this.email}",
+        "password": "${this.password}"
+      }`,
+    });
+  }
+
+  async getAccessToken(code) {
+    let response = await fetch(this.URL + `auth/${this.email}/${code}`, {
+      method: "GET",
+      headers: {
+        Accept: "*/*",
+      },
+    });
+
+    let data = await response.json();
+    this.token = data.token;
+  }
+
+  async getPatientData(property) {
+    let path = this.URL + "patient";
+    if (property !== undefined) {
+      path += `/${property}`;
+    }
+    let response = await fetch(path, {
+      method: "GET",
+      headers: {
+        Accept: "*/*",
+        Authorization: `Bearer ${this.token}`,
+      },
+    });
+
+    let dataObject = await response.json();
+    if (property === undefined) {
+      this.data = dataObject;
+    } else {
+      this.data[property] = dataObject[property];
+    }
+    return dataObject;
+  }
+
+  async postPatientData(dataObject) {
+    let response = await fetch(this.URL + "patient", {
+      method: "POST",
+      headers: {
+        Accept: "*/*",
+        "Content-Type": "application/json-patch+json",
+        Authorization: `Bearer ${this.token}`,
+      },
+      body: JSON.stringify(dataObject),
+    });
+  }
+
+  async getModelResponse(input) {
+    if (this.chatConnection.state !== "Connected") {
+      await this.chatConnection.start();
+    }
+    return this.chatConnection.invoke("SendMessage", input);
+  }
+}
+
+//Usage:
+
+user = new APIConnection(); //create new connection object
+
+user.email = "ryanbhillis@gmail.com";
+user.password = "NewPassword808!";
+
+user.getOneTimeCode(); //takes their username and password and sends to server
+
+//the line below will get the token from the server using the OTC
+//user.getAccessToken("6752");
+//the token will be stored inside of the user object
+
+// user.getPatientData();
+
+// //the data is stored in the user object
+// console.log(user.data);
+
+//user.getPatientData("property") //gets a specific property
+
+//to post patient data with a given json object
+//user.postPatientData({
+//    property: value,
+//    anotherProperty, anotherValue
+//});
+
+// console.log(user.token); //here is the token
 
   
-      // Start the connection
-      connection.start().then(() => {
-          console.log("Connected to SignalR");
-      }).catch(err => console.error(err));
   
       // Send message to the hub
       document.getElementById("sendButton").addEventListener("click", function () {
           const message = document.getElementById("messageInput").value;
-          connection.invoke("SendMessage", message).catch(err => console.error(err));
+          user.getModelResponse(message)
       });
   
       // Receive messages from the hub
-      connection.on("ReceiveMessage", function (message) {
+      user.chatConnection.on("ReceiveMessage", function (message) {
           const li = document.createElement("li");
           li.textContent = `${message}`;
           document.getElementById("messagesList").appendChild(li);
