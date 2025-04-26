@@ -6,8 +6,6 @@
 
   <body>
 
-    <h1>user Input</h1>
-    <input type="text" id="userInput" />
     <br><h1>message input</h1>
     <input type="text" id="messageInput" />
     <button id="sendButton">Send Message</button>
@@ -36,15 +34,14 @@
   
       // Send message to the hub
       document.getElementById("sendButton").addEventListener("click", function () {
-          const user = document.getElementById("userInput").value;
           const message = document.getElementById("messageInput").value;
-          connection.invoke("SendMessage", user, message).catch(err => console.error(err));
+          connection.invoke("SendMessage", message).catch(err => console.error(err));
       });
   
       // Receive messages from the hub
-      connection.on("ReceiveMessage", function (user, message) {
+      connection.on("ReceiveMessage", function (message) {
           const li = document.createElement("li");
-          li.textContent = `${user}: ${message}`;
+          li.textContent = `${message}`;
           document.getElementById("messagesList").appendChild(li);
       });
 

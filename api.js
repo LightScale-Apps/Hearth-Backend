@@ -5,6 +5,9 @@ class APIConnection {
     this.email = "";
     this.password = "";
     this.data = {};
+    this.chatConnection = new signalR.HubConnectionBuilder()
+      .withUrl("/chat", { accessTokenFactory: () => this.token })
+      .build();
   }
 
   async request(url) {
@@ -85,7 +88,7 @@ class APIConnection {
 user = new APIConnection(); //create new connection object
 
 user.email = "ryanbhillis@gmail.com";
-user.password = "mypasswordsuXXX:3";
+user.password = "NewPassword808!";
 
 user.getOneTimeCode(); //takes their username and password and sends to server
 
