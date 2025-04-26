@@ -68,10 +68,10 @@ namespace api.Controllers
         }
     
 
-        [HttpGet("{code}")]
-        public async Task<IActionResult> GetAccessToken([FromRoute] string code) {
+        [HttpGet("{email}/{code}")]
+        public async Task<IActionResult> GetAccessToken([FromRoute] string email, [FromRoute] string code) {
             if (code == "NO_CODE") return Unauthorized("No code");
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.OTC == code);
+            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.OTC == code && x.Email == email);
 
             if (user == null) return Unauthorized("Invalid code");
             user.OTC = "NO_CODE";
