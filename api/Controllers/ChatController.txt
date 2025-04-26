@@ -16,7 +16,7 @@ using api.Service;
 
 namespace api.Controllers
 {
-    [Route("chat")]
+    [Route("api/chat")]
     [Authorize]
     [ApiController]
     public class ChatController : ControllerBase

@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -106,16 +107,15 @@ builder.Services.AddCors(options =>
             });
     });
 
+builder.Services.AddSignalR();
+
 
 builder.Services.AddScoped<IDataRepository, DataRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
-builder.Services.AddSingleton<ChatService>();
 
 
 var app = builder.Build();
-
-app.UseWebSockets();
 
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
@@ -138,18 +138,6 @@ app.UseStaticFiles();
 
 app.MapControllers();
 
-app.MapGet("/chat", async (HttpContext context, ChatService chatService) =>
-{
-    var identity = context.User.Identity;
-
-
-    if (identity != null) await context.Response.WriteAsync(identity.ToString());
-    else await context.Response.WriteAsync(context.User.Identity.ToString());
-
-    if (context.WebSockets.IsWebSocketRequest) {
-        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-        await chatService.HandleWebSocketConnection(webSocket, "id");  
-    }
-}).RequireAuthorization();
+app.MapHub<ChatHub>("/chat").RequireAuthorization();
 
 app.Run();
