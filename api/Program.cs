@@ -125,7 +125,6 @@ app.UseWebSockets();
     });
 //}
 
-
 //app.UseHttpsRedirection();
 
 app.UseCors("Policy1");
