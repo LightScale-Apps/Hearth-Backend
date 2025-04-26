@@ -18,7 +18,7 @@ class APIConnection {
     return await res;
   }
 
-  async login() {
+  async getOneTimeCode() {
     const res = await fetch(this.URL + "auth/login", {
       method: "POST",
       headers: {
@@ -30,11 +30,18 @@ class APIConnection {
         "password": "${this.password}"
       }`,
     });
+  }
 
-    await console.log(res);
+  async getAccessToken(oneTimeCode) {
+    let response = await fetch(this.URL + "auth/" + oneTimeCode, {
+      method: "GET",
+      headers: {
+        Accept: "*/*",
+      },
+    });
 
-    this.token = await res.json().token;
-    return this.token;
+    let data = await response.json();
+    this.token = data.token;
   }
 }
 
