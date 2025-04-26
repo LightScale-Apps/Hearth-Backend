@@ -48,7 +48,7 @@ namespace api.Controllers
         }
 
         [HttpPost("forgot-password/reset")]
-        public async Task<IActionResult> ForgotPassword([FromBody] string email, [FromBody] string token, [FromBody] string newPassword) {
+        public async Task<IActionResult> ForgotPassword([FromBody] string email, string token, string newPassword) {
             
             var user = await _userManager.FindByEmailAsync(email);
 
