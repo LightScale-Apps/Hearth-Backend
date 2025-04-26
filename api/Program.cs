@@ -93,6 +93,18 @@ builder.Services.AddAuthentication(options =>
     options.SaveToken=true;
 });
 
+builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowSpecificOrigins", // The policy name...
+            builder =>
+            {
+                // Welcome! Requests from these domains can access my party (web application)...
+                builder.WithOrigins("http://18.189.105.20/", "http://ec2-18-189-105-20.us-east-2.compute.amazonaws.com/")
+                    .AllowAnyHeader() // You can wear anything to my party (any headers are allowed)...
+                    .AllowAnyMethod(); // And bring any dish (any HTTP methods are allowed). Everyone's welcome!
+            });
+    });
+
 
 builder.Services.AddScoped<IDataRepository, DataRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -116,7 +128,7 @@ app.UseWebSockets();
 
 //app.UseHttpsRedirection();
 
-app.UseCors("AllowAnyOrigin");
+app.UseCors("AllowSpecificOrigins");
 
 app.UseAuthentication();
 app.UseAuthorization();

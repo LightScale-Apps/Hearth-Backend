@@ -20,8 +20,8 @@ class APIConnection {
     const res = await fetch(this.URL + "auth/login", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        accept: "*/*",
+        "Content-Type": "text/plain",
+        Accept: "*/*",
       },
       body: JSON.stringify({ email, password }),
     });
