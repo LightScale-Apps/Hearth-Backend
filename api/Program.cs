@@ -116,7 +116,7 @@ app.UseWebSockets();
 
 //app.UseHttpsRedirection();
 
-//app.UseCors("AllowAnyOrigin");
+app.UseCors("AllowAnyOrigin");
 
 app.UseAuthentication();
 app.UseAuthorization();
