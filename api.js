@@ -45,8 +45,12 @@ class APIConnection {
     this.token = data.token;
   }
 
-  async getPatientData() {
-    let response = await fetch(this.URL + "patient", {
+  async getPatientData(property) {
+    let path = this.URL + "patient";
+    if (property !== undefined) {
+      path += `/${property}`;
+    }
+    let response = await fetch(path, {
       method: "GET",
       headers: {
         Accept: "*/*",
@@ -55,7 +59,24 @@ class APIConnection {
     });
 
     let dataObject = await response.json();
-    this.data = dataObject;
+    if (property === undefined) {
+      this.data = dataObject;
+    } else {
+      this.data[property] = dataObject[property];
+    }
+    return dataObject;
+  }
+
+  async postPatientData(dataObject) {
+    let response = await fetch(this.URL + "patient", {
+      method: "POST",
+      headers: {
+        Accept: "*/*",
+        "Content-Type": "application/json-patch+json",
+        Authorization: `Bearer ${this.token}`,
+      },
+      body: JSON.stringify(dataObject),
+    });
   }
 }
 
@@ -71,9 +92,9 @@ user.getOneTimeCode(); //takes their username and password and sends to server
 //the line below will get the token from the server using the OTC
 //user.getAccessToken("6752");
 
-user.getPatientData();
+// user.getPatientData();
 
-//the data is stored in the user object
-console.log(user.data);
+// //the data is stored in the user object
+// console.log(user.data);
 
-console.log(user.token); //here is the token
+// console.log(user.token); //here is the token
