@@ -91,10 +91,19 @@ user.getOneTimeCode(); //takes their username and password and sends to server
 
 //the line below will get the token from the server using the OTC
 //user.getAccessToken("6752");
+//the token will be stored inside of the user object
 
 // user.getPatientData();
 
 // //the data is stored in the user object
 // console.log(user.data);
+
+//user.getPatientData("property") //gets a specific property
+
+//to post patient data with a given json object
+//user.postPatientData({
+//    property: value,
+//    anotherProperty, anotherValue
+//});
 
 // console.log(user.token); //here is the token
