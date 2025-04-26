@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Mail;
 using Org.BouncyCastle.Asn1.Esf;
 using Org.BouncyCastle.Bcpg;
+using Org.BouncyCastle.Crypto.Engines;
 
 namespace api.Controllers
 {
@@ -58,8 +59,10 @@ namespace api.Controllers
 
             
             user.OTC = generator.Next(0, 9).ToString() + generator.Next(0, 9).ToString() + generator.Next(0, 9).ToString() + generator.Next(0, 9).ToString();
-            
-            await _emailSender.SendEmailAsync(user.Email, "Hearth - One-Time Code", user.OTC);
+            var message = "<h3>Your HEARTH One-Time Code is below.</h3><br><h1>" + user.OTC + "</h1><br><h6>If you didn't request this code, consider changing your password</h6>";
+
+
+            await _emailSender.SendEmailAsync(user.Email, "Hearth - One-Time Code", message);
 
             await _context.SaveChangesAsync();
 
