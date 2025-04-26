@@ -32,8 +32,8 @@ class APIConnection {
     });
   }
 
-  async getAccessToken(oneTimeCode) {
-    let response = await fetch(this.URL + `auth/${this.email}/${oneTimeCode}`, {
+  async getAccessToken(code) {
+    let response = await fetch(this.URL + `auth/${this.email}/${code}`, {
       method: "GET",
       headers: {
         Accept: "*/*",
