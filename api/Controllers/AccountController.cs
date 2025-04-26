@@ -39,7 +39,7 @@ namespace api.Controllers
 
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(string email) {
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == email);
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
             _emailSender.SendEmailAsync(user.Email, "HEARTH - Reset Password", token);
