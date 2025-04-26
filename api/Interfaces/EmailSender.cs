@@ -19,16 +19,15 @@ namespace api.Interfaces
                 EnableSsl = true,
                 Credentials = new NetworkCredential(addr, pw)
             };
-
-            return client.SendMailAsync(
-                new MailMessage(
-                    from: addr,
-                    to: email,
-                    subject,
-                    message
-                )
+            var emailMessage = new MailMessage(
+                from: addr,
+                to: email,
+                subject,
+                message
             );
+            emailMessage.IsBodyHtml = true;
 
+            return client.SendMailAsync(emailMessage);
         }
 
     }
