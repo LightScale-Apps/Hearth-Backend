@@ -37,6 +37,26 @@ namespace api.Controllers
             _emailSender = emailSender;
         }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] string email) {
+            var user = await _userManager.FindByEmailAsync(email);
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            _emailSender.SendEmailAsync(user.Email, "HEARTH - Reset Password", token);
+
+            return Ok("Password reset Email sent");
+        }
+
+        [HttpPost("forgot-password/reset")]
+        public async Task<IActionResult> ForgotPassword([FromBody] string email, [FromBody] string token, [FromBody] string newPassword) {
+            
+            var user = await _userManager.FindByEmailAsync(email);
+
+            _userManager.ResetPasswordAsync(user, token, newPassword);
+
+            return Ok("Password reset");
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
