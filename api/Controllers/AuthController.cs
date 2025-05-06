@@ -15,6 +15,9 @@ using System.Net.Mail;
 using Org.BouncyCastle.Asn1.Esf;
 using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Crypto.Engines;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using Azure.Core;
+using System.Runtime.Intrinsics.Arm;
 
 namespace api.Controllers
 {
@@ -69,20 +72,58 @@ namespace api.Controllers
             return Ok("Check Email");
             
         }
+
+        private static Random random = new Random();
+
+        private static string RandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
     
 
-        [HttpGet("{email}/{code}")]
-        public async Task<IActionResult> GetAccessToken([FromRoute] string email, [FromRoute] string code) {
+        [HttpPost("{email}/{code}")]
+        public async Task<IActionResult> GetRefreshToken([FromRoute] string email, [FromRoute] string code) {
             if (code == "NO_CODE") return Unauthorized("No code");
+
             var user = await _userManager.Users.FirstOrDefaultAsync(x => x.OTC == code && x.Email == email);
 
             if (user == null) return Unauthorized("Invalid code");
             user.OTC = "NO_CODE";
-            await _context.SaveChangesAsync();;
 
-            return Ok(new NewUserDto {
-                Email = user.Email,
-                Token = _tokenService.CreateToken(user)
+            var refreshToken = new RefreshTokens {
+                Token = RandomString(128),
+                OwnedBy = user.Id,
+                CreatedOn = DateTime.Now
+            };
+            await _context.RefreshTokens.AddAsync(refreshToken);
+            _context.SaveChangesAsync();
+
+            return Ok(new TokenDto {
+                RefreshToken = refreshToken.Token,
+                AccessToken = _tokenService.CreateToken(user)
+            });
+        }
+
+        [HttpPost("refresh-tokens")]
+        public async Task<IActionResult> GetAccessToken([FromBody] string refreshToken) {
+            //find the user it belongs to
+            var tokenSearchResult = await _context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == refreshToken);
+            if (tokenSearchResult == null) return Unauthorized("Invalid token");
+
+            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == tokenSearchResult.OwnedBy);
+            if (user == null) return Unauthorized("Invalid token");
+
+            var accessToken = _tokenService.CreateToken(user);
+
+            tokenSearchResult.Token = RandomString(128); //maybe we don't need this
+            tokenSearchResult.CreatedOn = DateTime.Now;
+            _context.SaveChangesAsync();
+
+            return Ok(new TokenDto {
+                AccessToken = accessToken,
+                RefreshToken = tokenSearchResult.Token
             });
         }
     }

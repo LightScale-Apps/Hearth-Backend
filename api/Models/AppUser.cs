@@ -10,5 +10,6 @@ namespace api.Models
     public class AppUser : IdentityUser
     {
         public string OTC {get; set;} = string.Empty;
+        
     }
 }
