@@ -23,7 +23,6 @@ class APIConnection {
     this.URL = "http://ec2-18-189-105-20.us-east-2.compute.amazonaws.com/api/";
     this.token = "";
     this.email = "";
-    this.password = "";
     this.data = {};
     this.chatConnection = new signalR.HubConnectionBuilder()
       .withUrl("/chat", { accessTokenFactory: () => this.token })
@@ -42,7 +41,7 @@ class APIConnection {
     return await res;
   }
 
-  async getOneTimeCode() {
+  async getOneTimeCode(password) {
     const res = await fetch(this.URL + "auth/login", {
       method: "POST",
       headers: {
@@ -51,7 +50,7 @@ class APIConnection {
       },
       body: `{
         "email": "${this.email}",
-        "password": "${this.password}"
+        "password": ${password}
       }`,
     });
   }
@@ -115,9 +114,8 @@ class APIConnection {
 user = new APIConnection(); //create new connection object
 
 user.email = "ryanbhillis@gmail.com";
-user.password = "NewPassword808!";
 
-user.getOneTimeCode(); //takes their username and password and sends to server
+user.getOneTimeCode("NewPassword808!"); //takes their username and password and sends to server
 
 //the line below will get the token from the server using the OTC
 //user.getAccessToken("6752");
