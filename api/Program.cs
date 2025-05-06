@@ -92,7 +92,7 @@ builder.Services.AddAuthentication(options =>
             System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"])
         )
     };
-    options.SaveToken=true;
+    options.SaveToken=false;
 });
 
 builder.Services.AddCors(options =>
