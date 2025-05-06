@@ -130,6 +130,10 @@ class APIConnection {
     let data = await response.json();
     this.token = data.accessToken;
     this.refresh = data.refreshToken;
+
+    //to remove later
+    document.getElementById("accessToken").innerText = this.token;
+    document.getElementById("refreshToken").innerText = this.refresh;
   }
 }
 
