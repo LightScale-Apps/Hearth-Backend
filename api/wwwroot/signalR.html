@@ -124,7 +124,7 @@ user.email = "ryanbhillis@gmail.com";
 user.getOneTimeCode("stringSTRING123!@#"); //logs-in and gets OTC to email
 //NOTICE: WE DO NOT WANT TO STORE THE USER'S PASSWORD
 
-let oneTimeCode = input("Type the One-Time Code")
+let oneTimeCode = prompt("Type the One-Time Code")
 
 user.verifyOneTimeCode(oneTimeCode); //this will get the tokens and authenticate the user
 //the refreshToken should be saved to localStorage
