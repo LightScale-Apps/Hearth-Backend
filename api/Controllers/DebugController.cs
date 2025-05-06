@@ -66,5 +66,18 @@ namespace api.Controllers
 
             return Ok(dataList);
         }
+                [HttpGet]
+        [Route("list-tokens")]
+        public async Task<IActionResult> DebugListTokensAsync()
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+        
+            var dataList = await _context.RefreshTokens.ToListAsync();
+
+            if (dataList == null) return NotFound();
+
+            return Ok(dataList);
+        }
     }
 }
