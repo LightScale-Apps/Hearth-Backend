@@ -6,6 +6,16 @@
 
   <body>
 
+    <input type="text" id="email" />
+    <label for="email">Type Email</label>
+    <input type="text" id="password" />
+    <label for="password">Type Password</label>
+    <button id="loginButton">Login</button>
+    <br>
+    <input type="text" id="otc" />
+    <label for="otc">Verify One-Time Code</label>
+    <button id="otcButton">Verify</button>
+    <br>
     <br><h1>message input</h1>
     <input type="text" id="messageInput" />
     <button id="sendButton">Send Message</button>
@@ -120,53 +130,66 @@ user = new APIConnection();
 //user's refresh token
 //user's email
 
-user.email = "ryanbhillis@gmail.com";
-user.getOneTimeCode("stringSTRING123!@#"); //logs-in and gets OTC to email
+//user.email = "ryanbhillis@gmail.com";
+//user.getOneTimeCode("stringSTRING123!@#");
+
 //NOTICE: WE DO NOT WANT TO STORE THE USER'S PASSWORD
 
-let oneTimeCode = prompt("Type the One-Time Code")
+//then:
+//  user.verifyOneTimeCode(oneTimeCode); 
+//  this will get the tokens and authenticate the user
+//  TODO: save refreshToken to localStorage
 
-user.verifyOneTimeCode(oneTimeCode); //this will get the tokens and authenticate the user
-//the refreshToken should be saved to localStorage
 
-user.getPatientData(); //returns JSON result
+//user.getPatientData(); //returns JSON result
 //the result is also stored in the user data object
-console.log(user.data);
+//console.log(user.data);
 
 //more examples
-user.getPatientData("property")
-user.postPatientData({
-   property: value,
-   anotherProperty, anotherValue
-});
+// user.getPatientData("property")
+// user.postPatientData({
+//    property: value,
+//    anotherProperty, anotherValue
+// });
 
 //to talk to the LLM
-user.getModelResponse("text input goes here")//web sockets are handled under the hood
+//user.getModelResponse("text input goes here")
+// //web sockets are handled under the hood
 
 //to handle the LLM response
-user.chatConnection.on("ReceiveMessage", message => {
-  alert(message)
-})
+// user.chatConnection.on("ReceiveMessage", message => {
+//   alert(message)
+// })
 
 //after 10 minutes, the access token will expire and we will have to request another one
-user.refreshTokens()
+//user.refreshTokens()
+//THIS IS IMPORTANT
 
 
-//example implementation:
-function startPage() {
-   // Send message to the hub
-   document.getElementById("sendButton").addEventListener("click", function () {
-          const message = document.getElementById("messageInput").value;
-          user.getModelResponse(message)
-      });
-  
-      // Receive messages from the hub
-      user.chatConnection.on("ReceiveMessage", function (message) {
-          const li = document.createElement("li");
-          li.textContent = `${message}`;
-          document.getElementById("messagesList").appendChild(li);
-      });
-}
+document.getElementById("sendButton").addEventListener("click", function () {
+    const message = document.getElementById("messageInput").value;
+    user.getModelResponse(message)
+});
+
+// Receive messages from the hub
+user.chatConnection.on("ReceiveMessage", function (message) {
+    const li = document.createElement("li");
+    li.textContent = `${message}`;
+    document.getElementById("messagesList").appendChild(li);
+});
+
+document.getElementById("loginButton").addEventListener("click", () => {
+  user.email = document.getElementById("email").value
+  user.getOneTimeCode(document.getElementById("password"))
+})
+
+document.getElementById("otcButton").addEventListener("click", () => {
+  user.verifyOneTimeCode(document.getElementById("otc").value)
+})
+
+
+
+//TODO FOR ROSSMAN:
 
 //you need to implement:
 //getting accessTokens by calling user.refreshTokens()
