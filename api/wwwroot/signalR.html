@@ -191,7 +191,8 @@ document.getElementById("sendButton").addEventListener("click", function () {
 
 // Receive messages from the server
 user.chatConnection.on("ReceiveMessage", function (message) {
-    const li = document.createElement("li").textContent = `${message}`;
+    let li = document.createElement("li")
+    li.textContent = `${message}`;
     document.getElementById("messagesList").appendChild(li);
 });
 
