@@ -66,7 +66,8 @@ namespace api.Controllers
 
             return Ok(dataList);
         }
-                [HttpGet]
+        
+        [HttpGet]
         [Route("list-tokens")]
         public async Task<IActionResult> DebugListTokensAsync()
         {
