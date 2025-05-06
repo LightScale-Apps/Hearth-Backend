@@ -5,11 +5,12 @@
   </head>
 
   <body>
-
+    <label for="email">Type Email: </label>
     <input type="text" id="email" />
-    <label for="email">Type Email</label>
+
+    <label for="password">Type Password: </label>
     <input type="text" id="password" />
-    <label for="password">Type Password</label>
+    
     <button id="loginButton">Login</button>
     <br>
     <input type="text" id="otc" />
@@ -114,7 +115,7 @@ class APIConnection {
       headers: {
         Accept: "*/*",
       },
-      body: this.refresh
+      body: `"${this.refresh}"`
     });
 
     let data = await response.json();
@@ -126,20 +127,16 @@ class APIConnection {
 //Usage:
 user = new APIConnection();
 //the constructor should check localStorage to populate as much data as possible.
-//relevant data is:
-//user's refresh token
-//user's email
+//relevant data is: user's refresh token, user's email
 
 //user.email = "ryanbhillis@gmail.com";
 //user.getOneTimeCode("stringSTRING123!@#");
 
 //NOTICE: WE DO NOT WANT TO STORE THE USER'S PASSWORD
 
-//then:
 //  user.verifyOneTimeCode(oneTimeCode); 
 //  this will get the tokens and authenticate the user
 //  TODO: save refreshToken to localStorage
-
 
 //user.getPatientData(); //returns JSON result
 //the result is also stored in the user data object
@@ -154,7 +151,7 @@ user = new APIConnection();
 
 //to talk to the LLM
 //user.getModelResponse("text input goes here")
-// //web sockets are handled under the hood
+//web sockets are handled under the hood
 
 //to handle the LLM response
 // user.chatConnection.on("ReceiveMessage", message => {
@@ -186,8 +183,6 @@ document.getElementById("loginButton").addEventListener("click", () => {
 document.getElementById("otcButton").addEventListener("click", () => {
   user.verifyOneTimeCode(document.getElementById("otc").value)
 })
-
-
 
 //TODO FOR ROSSMAN:
 
