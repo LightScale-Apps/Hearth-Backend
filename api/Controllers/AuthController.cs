@@ -119,7 +119,7 @@ namespace api.Controllers
 
             tokenSearchResult.Token = RandomString(128); //maybe we don't need this
             tokenSearchResult.CreatedOn = DateTime.Now;
-            _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             return Ok(new TokenDto {
                 AccessToken = accessToken,
