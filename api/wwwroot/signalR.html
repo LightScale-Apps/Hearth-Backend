@@ -174,7 +174,7 @@ user = new APIConnection();
 
 document.getElementById("loginButton").addEventListener("click", () => {
   user.email = document.getElementById("email").value
-  let password = document.getElementById("password")
+  let password = document.getElementById("password").value
   user.getOneTimeCode(password)
 })
 
