@@ -122,6 +122,7 @@ class APIConnection {
       method: "POST",
       headers: {
         Accept: "*/*",
+        "Content-Type": "application/json-patch+json"
       },
       body: `"${this.refresh}"`
     });
