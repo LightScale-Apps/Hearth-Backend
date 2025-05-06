@@ -22,23 +22,12 @@ class APIConnection {
   constructor() {
     this.URL = "http://ec2-18-189-105-20.us-east-2.compute.amazonaws.com/api/";
     this.token = "";
+    this.refresh = "";
     this.email = "";
     this.data = {};
     this.chatConnection = new signalR.HubConnectionBuilder()
       .withUrl("/chat", { accessTokenFactory: () => this.token })
       .build();
-  }
-
-  async request(url) {
-    const res = await fetch(this.URL + url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        accept: "*/*",
-      },
-      body: "",
-    });
-    return await res;
   }
 
   async getOneTimeCode(password) {
@@ -55,16 +44,17 @@ class APIConnection {
     });
   }
 
-  async getAccessToken(code) {
+  async verifyOneTimeCode(code) {
     let response = await fetch(this.URL + `auth/${this.email}/${code}`, {
-      method: "GET",
+      method: "POST",
       headers: {
         Accept: "*/*",
       },
     });
 
     let data = await response.json();
-    this.token = data.token;
+    this.token = data.accessToken;
+    this.refresh = data.refreshToken;
   }
 
   async getPatientData(property) {
@@ -107,39 +97,65 @@ class APIConnection {
     }
     return this.chatConnection.invoke("SendMessage", input);
   }
+
+  async refreshTokens() {
+    let response = await fetch(this.URL + `auth/refresh-tokens`, {
+      method: "POST",
+      headers: {
+        Accept: "*/*",
+      },
+      body: this.refresh
+    });
+
+    let data = await response.json();
+    this.token = data.accessToken;
+    this.refresh = data.refreshToken;
+  }
 }
 
 //Usage:
-
-user = new APIConnection(); //create new connection object
+user = new APIConnection();
+//the constructor should check localStorage to populate as much data as possible.
+//relevant data is:
+//user's refresh token
+//user's email
 
 user.email = "ryanbhillis@gmail.com";
+user.getOneTimeCode("stringSTRING123!@#"); //logs-in and gets OTC to email
+//NOTICE: WE DO NOT WANT TO STORE THE USER'S PASSWORD
 
-user.getOneTimeCode("NewPassword808!"); //takes their username and password and sends to server
+let oneTimeCode = input("Type the One-Time Code")
 
-//the line below will get the token from the server using the OTC
-//user.getAccessToken("6752");
-//the token will be stored inside of the user object
+user.verifyOneTimeCode(oneTimeCode); //this will get the tokens and authenticate the user
+//the refreshToken should be saved to localStorage
 
-// user.getPatientData();
+user.getPatientData(); //returns JSON result
+//the result is also stored in the user data object
+console.log(user.data);
 
-// //the data is stored in the user object
-// console.log(user.data);
+//more examples
+user.getPatientData("property")
+user.postPatientData({
+   property: value,
+   anotherProperty, anotherValue
+});
 
-//user.getPatientData("property") //gets a specific property
+//to talk to the LLM
+user.getModelResponse("text input goes here")//web sockets are handled under the hood
 
-//to post patient data with a given json object
-//user.postPatientData({
-//    property: value,
-//    anotherProperty, anotherValue
-//});
+//to handle the LLM response
+user.chatConnection.on("ReceiveMessage", message => {
+  alert(message)
+})
 
-// console.log(user.token); //here is the token
+//after 10 minutes, the access token will expire and we will have to request another one
+user.refreshTokens()
 
-  
-  
-      // Send message to the hub
-      document.getElementById("sendButton").addEventListener("click", function () {
+
+//example implementation:
+function startPage() {
+   // Send message to the hub
+   document.getElementById("sendButton").addEventListener("click", function () {
           const message = document.getElementById("messageInput").value;
           user.getModelResponse(message)
       });
@@ -150,8 +166,21 @@ user.getOneTimeCode("NewPassword808!"); //takes their username and password and 
           li.textContent = `${message}`;
           document.getElementById("messagesList").appendChild(li);
       });
+}
 
-      
+//you need to implement:
+//getting accessTokens by calling user.refreshTokens()
+//    either do it on a timer or detect when the tokens expire and then refresh
+
+//saving data to localstorage
+//    most importantly!!!! save user.refresh
+//    but also maybe email, data, idk
+
+//initializing from localstorage
+//    when we call new APIConnection()
+//    populate data from localstorage
+//    if there is a valid refreshToken then use .refreshTokens() to get an accessToken
+//    maybe also open the websocket for the chat using .chatConnection.start()
   </script>
   </body>
 </html>
