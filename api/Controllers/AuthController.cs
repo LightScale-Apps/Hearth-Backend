@@ -98,7 +98,7 @@ namespace api.Controllers
                 CreatedOn = DateTime.Now
             };
             await _context.RefreshTokens.AddAsync(refreshToken);
-            _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             return Ok(new TokenDto {
                 RefreshToken = refreshToken.Token,
