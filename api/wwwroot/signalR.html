@@ -17,6 +17,11 @@
     <label for="otc">Verify One-Time Code</label>
     <button id="otcButton">Verify</button>
     <br>
+
+    <h3>Refresh Token: <span id="refreshToken"></span></h3>
+    <br>
+    <h3>Access Token: <span id="accessToken"></span></h3>
+
     <br><h1>message input</h1>
     <input type="text" id="messageInput" />
     <button id="sendButton">Send Message</button>
@@ -24,7 +29,6 @@
 
     <h1>MESSAGES BELOW</h1>
     <ul id="messagesList"></ul>
-
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
     <script type="text/javascript">
@@ -66,6 +70,10 @@ class APIConnection {
     let data = await response.json();
     this.token = data.accessToken;
     this.refresh = data.refreshToken;
+
+    //to remove later
+    document.getElementById("accessToken").innerText = this.token;
+    document.getElementById("refreshToken").innerText = this.refresh;
   }
 
   async getPatientData(property) {
@@ -164,14 +172,12 @@ user = new APIConnection();
 
 
 document.getElementById("sendButton").addEventListener("click", function () {
-    const message = document.getElementById("messageInput").value;
-    user.getModelResponse(message)
+    user.getModelResponse(document.getElementById("messageInput").value)
 });
 
 // Receive messages from the hub
 user.chatConnection.on("ReceiveMessage", function (message) {
-    const li = document.createElement("li");
-    li.textContent = `${message}`;
+    const li = document.createElement("li").textContent = `${message}`;
     document.getElementById("messagesList").appendChild(li);
 });
 
