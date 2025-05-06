@@ -139,7 +139,6 @@ user = new APIConnection();
 
 //user.email = "ryanbhillis@gmail.com";
 //user.getOneTimeCode("stringSTRING123!@#");
-
 //NOTICE: WE DO NOT WANT TO STORE THE USER'S PASSWORD
 
 //  user.verifyOneTimeCode(oneTimeCode); 
@@ -147,8 +146,7 @@ user = new APIConnection();
 //  TODO: save refreshToken to localStorage
 
 //user.getPatientData(); //returns JSON result
-//the result is also stored in the user data object
-//console.log(user.data);
+//console.log(user.data); //the result is also stored in user.data
 
 //more examples
 // user.getPatientData("property")
@@ -171,28 +169,35 @@ user = new APIConnection();
 //THIS IS IMPORTANT
 
 
+
+//example implementation of APIConnection()
+
+document.getElementById("loginButton").addEventListener("click", () => {
+  user.email = document.getElementById("email").value
+  let password = document.getElementById("password")
+  user.getOneTimeCode(password)
+})
+
+document.getElementById("otcButton").addEventListener("click", () => {
+  let oneTimeCode = document.getElementById("otc").value
+  user.verifyOneTimeCode(oneTimeCode)
+})
+
 document.getElementById("sendButton").addEventListener("click", function () {
-    user.getModelResponse(document.getElementById("messageInput").value)
+    let input = document.getElementById("messageInput").value
+    user.getModelResponse(input)
 });
 
-// Receive messages from the hub
+// Receive messages from the server
 user.chatConnection.on("ReceiveMessage", function (message) {
     const li = document.createElement("li").textContent = `${message}`;
     document.getElementById("messagesList").appendChild(li);
 });
 
-document.getElementById("loginButton").addEventListener("click", () => {
-  user.email = document.getElementById("email").value
-  user.getOneTimeCode(document.getElementById("password"))
-})
-
-document.getElementById("otcButton").addEventListener("click", () => {
-  user.verifyOneTimeCode(document.getElementById("otc").value)
-})
 
 //TODO FOR ROSSMAN:
-
 //you need to implement:
+
 //getting accessTokens by calling user.refreshTokens()
 //    either do it on a timer or detect when the tokens expire and then refresh
 
