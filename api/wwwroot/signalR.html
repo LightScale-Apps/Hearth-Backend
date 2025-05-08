@@ -105,7 +105,7 @@ class APIConnection {
     });
 
     let data = await response.json();
-    //check if it was succesful
+    //check if it was succesful, you can probably use the data.status number (404, 401, 200, etc.)
     this.authorized = true;
     if (this.authorized) {
       this.token = data.accessToken;
@@ -186,12 +186,11 @@ class APIConnection {
 //Usage:
 user = new APIConnection();
 
-//data will attempt to populate from localStorage
-//if succesful, we set user.authorized to true
+//data will attempt to populate from localStorage. if succesful, user.authorized = true
 
 
 //user.getOneTimeCode("ryanbhillis@gmail.com", "stringSTRING123!@#"); //WE NEVER STORE THE USER'S PASSWORD
-//user.verifyOneTimeCode(1864); //get the tokens and sets user.authorized to true
+//user.verifyOneTimeCode(1864); //get the tokens and sets user.authorized = true
 
 //let userData = await user.getPatientData(); //userData =  {age: "21", weight: "180"}
 //let userAge = await user.getPatientData("age"); //userAge = "21"
@@ -243,7 +242,9 @@ user.chatConnection.on("ReceiveMessage", (modelResponse) => {
 //TODO FOR ROSSMAN:
 //getting accessTokens by calling user.refreshTokens()
 //    either do it on a timer or detect when the tokens expire and then refresh
-//
+//    some ideas: 
+//          maybe you can use the user.authorized field
+//          check if res = await fetch() was succesful or not using res.status (404, 200, etc.) or res.ok (true/false)
 
   </script>
   </body>
