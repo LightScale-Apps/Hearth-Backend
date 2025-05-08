@@ -172,9 +172,7 @@ class APIConnection {
       body: `"${this.refresh}"`
     });
 
-    this.authorized = response.ok;
-
-    if (this.authorized) {
+    if (this.authorized = response.ok) {
       let data = await response.json();
       this.token = data.accessToken;
       this.refresh = data.refreshToken;
