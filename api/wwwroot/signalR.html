@@ -45,7 +45,7 @@ class APIConnection {
       .build();
 
     let localRefreshToken = window.localStorage.getItem("hearth-jwt-refresh-token");
-    if (localRefreshToken !== undefined) { //we already have a token (user has logged in recently)
+    if (localRefreshToken != undefined) { //we already have a token (user has logged in recently)
       this.refresh = localRefreshToken;
       this.refreshTokens().then((isAuthorized) => {
         if (isAuthorized) this.chatConnection.start()
