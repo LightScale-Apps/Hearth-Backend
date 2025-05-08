@@ -38,17 +38,31 @@
 
 class APIConnection {
   constructor() {
+
     this.URL = "http://ec2-18-189-105-20.us-east-2.compute.amazonaws.com/api/";
-    this.token = "";
-    this.refresh = "";
-    this.email = "";
-    this.data = {};
+    
+    this.claims = {}, this.data = {};
+    this.token = "", this.refresh = {};
     this.chatConnection = new signalR.HubConnectionBuilder()
       .withUrl("/chat", { accessTokenFactory: () => this.token })
       .build();
   }
 
-  async getOneTimeCode(password) {
+  async updateDocument() {
+    if (this.claims == {}) {
+      let base64 = this.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      this.claims = JSON.parse(jsonPayload)
+    }
+    document.getElementById("email").value = this.claims.email
+    document.getElementById("accessToken").innerText = this.token;
+    document.getElementById("refreshToken").innerText = this.refresh;
+  }
+
+  async getOneTimeCode(email, password) {
     const res = await fetch(this.URL + "auth/login", {
       method: "POST",
       headers: {
@@ -56,7 +70,7 @@ class APIConnection {
         Accept: "*/*",
       },
       body: `{
-        "email": "${this.email}",
+        "email": "${email}",
         "password": "${password}"
       }`,
     });
@@ -74,9 +88,7 @@ class APIConnection {
     this.token = data.accessToken;
     this.refresh = data.refreshToken;
 
-    //to remove later
-    document.getElementById("accessToken").innerText = this.token;
-    document.getElementById("refreshToken").innerText = this.refresh;
+    this.updateDocument()
   }
 
   async getPatientData(property) {
@@ -84,6 +96,7 @@ class APIConnection {
     if (property !== undefined) {
       path += `/${property}`;
     }
+
     let response = await fetch(path, {
       method: "GET",
       headers: {
@@ -134,9 +147,7 @@ class APIConnection {
     this.token = data.accessToken;
     this.refresh = data.refreshToken;
 
-    //to remove later
-    document.getElementById("accessToken").innerText = this.token;
-    document.getElementById("refreshToken").innerText = this.refresh;
+    this.updateDocument();
   }
 }
 
@@ -182,9 +193,9 @@ user = new APIConnection();
 //example implementation of APIConnection()
 
 document.getElementById("loginButton").addEventListener("click", () => {
-  user.email = document.getElementById("email").value
+  let email = document.getElementById("email").value
   let password = document.getElementById("password").value
-  user.getOneTimeCode(password)
+  user.getOneTimeCode(email, password)
 })
 
 document.getElementById("otcButton").addEventListener("click", () => {
