@@ -62,6 +62,7 @@ class APIConnection {
     }).join(''));
 
     this.claims = JSON.parse(jsonPayload)
+    this.email = this.claims.email
   }
 
   async updateDocument() {
