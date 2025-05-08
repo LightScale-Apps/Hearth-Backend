@@ -65,9 +65,10 @@ class APIConnection {
   async updateDocument() {
 
     if (this.authorized) {
+      window.localStorage.setItem("hearth-jwt-refresh-token", this.refresh);
+
       if (this.claims === undefined) this.getClaims();
-      window.localStorage.setItem("hearth-jwt-refresh-token", this.refresh)
-      document.getElementById("email").value = this.claims.email
+      document.getElementById("email").value = this.claims.email;
     }
 
     document.getElementById("accessToken").innerText = this.token;
@@ -97,10 +98,14 @@ class APIConnection {
     });
 
     let data = await response.json();
-    this.token = data.accessToken;
-    this.refresh = data.refreshToken;
-
+    //check if it was succesful
+    this.authorized = true;
+    if (this.authorized) {
+      this.token = data.accessToken;
+      this.refresh = data.refreshToken;
+    }
     this.updateDocument()
+    return this.authorized
   }
 
   async getPatientData(property) {
@@ -119,11 +124,10 @@ class APIConnection {
 
     let dataObject = await response.json();
     if (property === undefined) {
-      this.data = dataObject;
+      return this.data = dataObject;
     } else {
-      this.data[property] = dataObject[property];
+      return this.data[property] = dataObject[property];
     }
-    return dataObject;
   }
 
   async postPatientData(dataObject) {
@@ -139,10 +143,14 @@ class APIConnection {
   }
 
   async getModelResponse(input) {
-    if (this.chatConnection.state !== "Connected") {
-      await this.chatConnection.start();
+    if (this.authorized) {
+      if (this.chatConnection.state !== "Connected") {
+        await this.chatConnection.start();
+      }
+      return this.chatConnection.invoke("SendMessage", input);
+    } else {
+      return "Unauthorized"
     }
-    return this.chatConnection.invoke("SendMessage", input);
   }
 
   async refreshTokens() {
@@ -157,6 +165,7 @@ class APIConnection {
 
     //check if it was successful
     let data = await response.json();
+
     this.authorized = true;
     if (this.authorized) {
       this.token = data.accessToken;
@@ -170,40 +179,37 @@ class APIConnection {
 //Usage:
 user = new APIConnection();
 
-//let loginEmail = "ryanbhillis@gmail.com";
-//user.getOneTimeCode(loginEmail, "stringSTRING123!@#");
-//NOTICE: WE NEVER STORE THE USER'S PASSWORD
+//data will attempt to populate from localStorage
+//if succesful, we set user.authorized to true
 
-//  user.verifyOneTimeCode(oneTimeCode); 
-//  this will get the tokens and authenticate the user
+//otherwise...
 
-//let userData = user.getPatientData(); //returns JSON result
-//console.log(user.data); //the result is also stored in user.data
+//user.getOneTimeCode("ryanbhillis@gmail.com", "stringSTRING123!@#"); //WE NEVER STORE THE USER'S PASSWORD
+//user.verifyOneTimeCode(4178); //get the tokens and sets user.authorized to true
 
+//let userData = await user.getPatientData(); //userData =  {age: "21", weight: "180"}
+//let userAge = await user.getPatientData("age"); //userAge = "21"
 
-// user.getPatientData("property"); //this will set the value of user.data.property
-// user.postPatientData({
-//    property: value,
-//    anotherProperty, anotherValue
-// });
+//getPatientData() also modifies the field user.data
+//user.data = {age: '21', weight: '170'}
+
+//to save data to the server
+// user.postPatientData({ height: 70, sex: "male"})
+
 
 //to talk to the LLM
 //user.getModelResponse("I am not feeling well and my leg hurts")
-//web sockets are handled under the hood
 
 //to handle the LLM response
-// user.chatConnection.on("ReceiveMessage", message => {
+//user.chatConnection.on("ReceiveMessage", message => {
 //   alert(message)
 // })
 
 //after 10 minutes, the access token will expire and we will have to request another one
 //user.refreshTokens()
-//THIS IS IMPORTANT
-
 
 
 //example implementation of APIConnection()
-
 document.getElementById("loginButton").addEventListener("click", () => {
   let email = document.getElementById("email").value
   let password = document.getElementById("password").value
@@ -221,18 +227,18 @@ document.getElementById("sendButton").addEventListener("click", function () {
 });
 
 // Receive messages from the server
-user.chatConnection.on("ReceiveMessage", function (message) {
-    let li = document.createElement("li")
-    li.textContent = `${message}`;
+user.chatConnection.on("ReceiveMessage", (modelResponse) => {
+    let li = document.createElement("li");
+    li.textContent = `${modelResponse}`;
     document.getElementById("messagesList").appendChild(li);
 });
 
 
 //TODO FOR ROSSMAN:
-//you need to implement:
-
 //getting accessTokens by calling user.refreshTokens()
 //    either do it on a timer or detect when the tokens expire and then refresh
+//
+
   </script>
   </body>
 </html>
