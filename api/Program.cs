@@ -106,10 +106,9 @@ builder.Services.AddCors(options =>
                     .AllowAnyMethod(); // And bring any dish (any HTTP methods are allowed). Everyone's welcome!
             });
     });
-
 builder.Services.AddSignalR();
 
-
+//add services
 builder.Services.AddScoped<IDataRepository, DataRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
