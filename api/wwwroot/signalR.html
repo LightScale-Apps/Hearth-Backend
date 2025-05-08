@@ -175,7 +175,7 @@ class APIConnection {
     this.authorized = response.ok;
 
     if (this.authorized) {
-      data = await response.json();
+      let data = await response.json();
       this.token = data.accessToken;
       this.refresh = data.refreshToken;
     }
@@ -246,7 +246,7 @@ user.chatConnection.on("ReceiveMessage", (modelResponse) => {
 //getting accessTokens by calling user.refreshTokens()
 //If you ever get a bad result from a user method (i.e. false, "Unauthorized", etc.):
 //    You have to call user.refreshTokens()
-//    if it returns true you're good,
+//    if it returns true you're good, try again
 //    if it returns false you need to have the user log in again
 
 //While you are using the chat service, my server will update the tokens for you
