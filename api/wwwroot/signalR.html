@@ -72,6 +72,9 @@ class APIConnection {
 
       if (this.claims === undefined) this.getClaims();
       document.getElementById("email").value = this.claims.email;
+    } else {
+      window.localStorage.removeItem("hearth-jwt-refresh-token");
+      this.refresh = undefined;
     }
 
     document.getElementById("accessToken").innerText = this.token;
@@ -90,10 +93,8 @@ class APIConnection {
         "password": "${password}"
       }`,
     });
-    //check if succesful
-    let successful = true
-    if (successful) this.email = email;
-    return successful;
+    if (res.ok) this.email = email;
+    return res.ok
   }
 
   async verifyOneTimeCode(code) {
@@ -104,10 +105,8 @@ class APIConnection {
       },
     });
 
-    let data = await response.json();
-    //check if it was succesful, you can probably use the data.status number (404, 401, 200, etc.)
-    this.authorized = true;
-    if (this.authorized) {
+    if (this.authorized = response.ok) {
+      let data = await response.json();
       this.token = data.accessToken;
       this.refresh = data.refreshToken;
     }
@@ -116,6 +115,8 @@ class APIConnection {
   }
 
   async getPatientData(property) {
+    if (!authorized) return "Unauthorized"
+
     let path = this.URL + "patient";
     if (property !== undefined) {
       path += `/${property}`;
@@ -129,16 +130,18 @@ class APIConnection {
       },
     });
 
+    if (!response.ok) return "Error"
+
     let dataObject = await response.json();
-    if (property === undefined) {
-      return this.data = dataObject;
-    } else {
-      return this.data[property] = dataObject[property];
-    }
+
+    if (property === undefined) return this.data = dataObject;
+    else return this.data[property] = dataObject[property];
   }
 
   async postPatientData(dataObject) {
-    let response = await fetch(this.URL + "patient", {
+    if (!authorized) return "Unauthorized";
+    
+    return fetch(this.URL + "patient", {
       method: "POST",
       headers: {
         Accept: "*/*",
@@ -150,14 +153,13 @@ class APIConnection {
   }
 
   async getModelResponse(input) {
-    if (this.authorized) {
-      if (this.chatConnection.state !== "Connected") {
-        await this.chatConnection.start();
-      }
-      return this.chatConnection.invoke("SendMessage", input);
-    } else {
-      return "Unauthorized"
+    if (!authorized) return "Unauthorized"
+
+    if (this.chatConnection.state !== "Connected") {
+      await this.chatConnection.start();
     }
+    return this.chatConnection.invoke("SendMessage", input);
+
   }
 
   async refreshTokens() {
@@ -170,16 +172,17 @@ class APIConnection {
       body: `"${this.refresh}"`
     });
 
-    //check if it was successful
-    let data = await response.json();
+    this.authorized = response.ok;
 
-    this.authorized = true;
-    if (this.authorized) {
+    if (authorized) {
+      data = await response.json();
       this.token = data.accessToken;
       this.refresh = data.refreshToken;
     }
+
     this.updateDocument();
-    return this.authorized;
+    return this.authorized
+    
   }
 }
 
@@ -241,11 +244,13 @@ user.chatConnection.on("ReceiveMessage", (modelResponse) => {
 
 //TODO FOR ROSSMAN:
 //getting accessTokens by calling user.refreshTokens()
-//    either do it on a timer or detect when the tokens expire and then refresh
-//    some ideas: 
-//          maybe you can use the user.authorized field
-//          check if res = await fetch() was succesful or not using res.status (404, 200, etc.) or res.ok (true/false)
+//If you ever get a bad result from a user method (i.e. false, "Unauthorized", etc.):
+//    You have to call user.refreshTokens()
+//    if it returns true you're good,
+//    if it returns false you need to have the user log in again
 
+//While you are using the chat service, my server will update the tokens for you
+//You only need to worry about the API.
   </script>
   </body>
 </html>
