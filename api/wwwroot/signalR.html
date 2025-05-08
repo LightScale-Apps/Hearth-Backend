@@ -115,7 +115,7 @@ class APIConnection {
   }
 
   async getPatientData(property) {
-    if (!authorized) return "Unauthorized"
+    if (!this.authorized) return "Unauthorized"
 
     let path = this.URL + "patient";
     if (property !== undefined) {
@@ -139,7 +139,7 @@ class APIConnection {
   }
 
   async postPatientData(dataObject) {
-    if (!authorized) return "Unauthorized";
+    if (!this.authorized) return "Unauthorized";
     
     return fetch(this.URL + "patient", {
       method: "POST",
@@ -153,7 +153,7 @@ class APIConnection {
   }
 
   async getModelResponse(input) {
-    if (!authorized) return "Unauthorized"
+    if (!this.authorized) return "Unauthorized"
 
     if (this.chatConnection.state !== "Connected") {
       await this.chatConnection.start();
@@ -174,7 +174,7 @@ class APIConnection {
 
     this.authorized = response.ok;
 
-    if (authorized) {
+    if (this.authorized) {
       data = await response.json();
       this.token = data.accessToken;
       this.refresh = data.refreshToken;
