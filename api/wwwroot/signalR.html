@@ -40,9 +40,11 @@ class APIConnection {
   constructor() {
     this.URL = "http://ec2-18-189-105-20.us-east-2.compute.amazonaws.com/api/";
     this.authorized = false;
+    this.data = {};
     this.chatConnection = new signalR.HubConnectionBuilder()
       .withUrl("/chat", { accessTokenFactory: () => this.token })
       .build();
+    
 
     let localRefreshToken = window.localStorage.getItem("hearth-jwt-refresh-token");
     if (localRefreshToken != undefined) { //we already have a token (user has logged in recently)
@@ -87,6 +89,10 @@ class APIConnection {
         "password": "${password}"
       }`,
     });
+    //check if succesful
+    let successful = true
+    if (succesful) this.email = email;
+    return succesful;
   }
 
   async verifyOneTimeCode(code) {
@@ -185,16 +191,16 @@ user = new APIConnection();
 //otherwise...
 
 //user.getOneTimeCode("ryanbhillis@gmail.com", "stringSTRING123!@#"); //WE NEVER STORE THE USER'S PASSWORD
-//user.verifyOneTimeCode(4178); //get the tokens and sets user.authorized to true
+//user.verifyOneTimeCode(1864); //get the tokens and sets user.authorized to true
 
 //let userData = await user.getPatientData(); //userData =  {age: "21", weight: "180"}
 //let userAge = await user.getPatientData("age"); //userAge = "21"
 
-//getPatientData() also modifies the field user.data
+//user.getPatientData() also modifies the user object itself
 //user.data = {age: '21', weight: '170'}
 
 //to save data to the server
-// user.postPatientData({ height: 70, sex: "male"})
+//user.postPatientData({ height: 70, sex: "male"})
 
 
 //to talk to the LLM
