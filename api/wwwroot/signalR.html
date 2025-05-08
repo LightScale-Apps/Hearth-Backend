@@ -39,29 +39,37 @@
 class APIConnection {
   constructor() {
     this.URL = "http://ec2-18-189-105-20.us-east-2.compute.amazonaws.com/api/";
+    this.authorized = false;
     this.chatConnection = new signalR.HubConnectionBuilder()
       .withUrl("/chat", { accessTokenFactory: () => this.token })
       .build();
 
     let localRefreshToken = window.localStorage.getItem("hearth-jwt-refresh-token");
-    if (localRefreshToken != undefined) { //we already have a token (user has logged in recently)
+    if (localRefreshToken !== undefined) { //we already have a token (user has logged in recently)
       this.refresh = localRefreshToken;
-      this.refreshTokens().then(this.chatConnection.start)
+      this.refreshTokens().then((isAuthorized) => {
+        if (isAuthorized) this.chatConnection.start()
+      })
     }
   }
 
-  async updateDocument() {
-    if (this.claims === undefined) {
-      let base64 = this.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
+  getClaims() {
+    let base64 = this.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
 
-      this.claims = JSON.parse(jsonPayload)
+    this.claims = JSON.parse(jsonPayload)
+  }
+
+  async updateDocument() {
+
+    if (this.authorized) {
+      if (this.claims === undefined) this.getClaims();
+      window.localStorage.setItem("hearth-jwt-refresh-token", this.refresh)
+      document.getElementById("email").value = this.claims.email
     }
 
-    window.localStorage.setItem("hearth-jwt-refresh-token", this.refresh)
-    document.getElementById("email").value = this.claims.email
     document.getElementById("accessToken").innerText = this.token;
     document.getElementById("refreshToken").innerText = this.refresh;
   }
@@ -147,40 +155,40 @@ class APIConnection {
       body: `"${this.refresh}"`
     });
 
+    //check if it was successful
     let data = await response.json();
-    this.token = data.accessToken;
-    this.refresh = data.refreshToken;
-
+    this.authorized = true;
+    if (this.authorized) {
+      this.token = data.accessToken;
+      this.refresh = data.refreshToken;
+    }
     this.updateDocument();
+    return this.authorized;
   }
 }
 
 //Usage:
 user = new APIConnection();
-//the constructor should check localStorage to populate as much data as possible.
-//relevant data is: user's refresh token, user's email
 
-//user.email = "ryanbhillis@gmail.com";
-//user.getOneTimeCode("stringSTRING123!@#");
-//NOTICE: WE DO NOT WANT TO STORE THE USER'S PASSWORD
+//let loginEmail = "ryanbhillis@gmail.com";
+//user.getOneTimeCode(loginEmail, "stringSTRING123!@#");
+//NOTICE: WE NEVER STORE THE USER'S PASSWORD
 
 //  user.verifyOneTimeCode(oneTimeCode); 
 //  this will get the tokens and authenticate the user
-//  TODO: save refreshToken to localStorage
 
-
-//user.getPatientData(); //returns JSON result
+//let userData = user.getPatientData(); //returns JSON result
 //console.log(user.data); //the result is also stored in user.data
 
-//more examples
-// user.getPatientData("property")
+
+// user.getPatientData("property"); //this will set the value of user.data.property
 // user.postPatientData({
 //    property: value,
 //    anotherProperty, anotherValue
 // });
 
 //to talk to the LLM
-//user.getModelResponse("text input goes here")
+//user.getModelResponse("I am not feeling well and my leg hurts")
 //web sockets are handled under the hood
 
 //to handle the LLM response
@@ -225,16 +233,6 @@ user.chatConnection.on("ReceiveMessage", function (message) {
 
 //getting accessTokens by calling user.refreshTokens()
 //    either do it on a timer or detect when the tokens expire and then refresh
-
-//saving data to localstorage
-//    most importantly!!!! save user.refresh
-//    but also maybe email, data, idk
-
-//initializing from localstorage
-//    when we call new APIConnection()
-//    populate data from localstorage
-//    if there is a valid refreshToken then use .refreshTokens() to get an accessToken
-//    maybe also open the websocket for the chat using .chatConnection.start()
   </script>
   </body>
 </html>
