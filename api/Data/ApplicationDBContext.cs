@@ -18,7 +18,7 @@ namespace api.Data
         }
 
         public DbSet<PatientData> PatientData { get; set; }
-        public DbSet<RefreshTokens> RefreshTokens {get; set; }
+        public DbSet<RefreshToken> RefreshTokens {get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

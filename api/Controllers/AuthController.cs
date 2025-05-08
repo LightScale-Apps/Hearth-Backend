@@ -92,7 +92,7 @@ namespace api.Controllers
             if (user == null) return Unauthorized("Invalid code");
             user.OTC = "NO_CODE";
 
-            var refreshToken = new RefreshTokens {
+            var refreshToken = new RefreshToken {
                 Token = RandomString(128),
                 OwnedBy = user.Id,
                 CreatedOn = DateTime.Now
