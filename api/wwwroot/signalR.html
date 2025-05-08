@@ -38,18 +38,20 @@
 
 class APIConnection {
   constructor() {
-
     this.URL = "http://ec2-18-189-105-20.us-east-2.compute.amazonaws.com/api/";
-    
-    this.claims = {}, this.data = {};
-    this.token = "", this.refresh = {};
     this.chatConnection = new signalR.HubConnectionBuilder()
       .withUrl("/chat", { accessTokenFactory: () => this.token })
       .build();
+
+    let localRefreshToken = window.localStorage.getItem("hearth-jwt-refresh-token");
+    if (localRefreshToken != undefined) { //we already have a token (user has logged in recently)
+      this.refresh = localRefreshToken;
+      this.refreshTokens().then(this.chatConnection.start)
+    }
   }
 
   async updateDocument() {
-    if (this.claims == {}) {
+    if (this.claims === undefined) {
       let base64 = this.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
       let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
@@ -57,6 +59,8 @@ class APIConnection {
 
       this.claims = JSON.parse(jsonPayload)
     }
+
+    window.localStorage.setItem("hearth-jwt-refresh-token", this.refresh)
     document.getElementById("email").value = this.claims.email
     document.getElementById("accessToken").innerText = this.token;
     document.getElementById("refreshToken").innerText = this.refresh;
