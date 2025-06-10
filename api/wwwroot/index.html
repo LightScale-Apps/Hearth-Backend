@@ -6,11 +6,255 @@
     <title>Hearth</title>
     <meta name="description" content="Your AI Health Assistant" />
     <meta name="author" content="Hearth FED" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
     <script type="module" crossorigin src="/assets/index-BGeQ04hw.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-CEfgOEK1.css">
   </head>
 
   <body>
     <div id="root"></div>
+    <label for="email">Type Email: </label>
+    <input type="text" id="email" />
+
+    <label for="password">Type Password: </label>
+    <input type="text" id="password" />
+    
+    <button id="loginButton">Login</button>
+    <br>
+    <input type="text" id="otc" />
+    <label for="otc">Verify One-Time Code</label>
+    <button id="otcButton">Verify</button>
+    <br>
+
+    <h3>Refresh Token: <span id="refreshToken"></span></h3>
+    <br>
+    <h3>Access Token: <span id="accessToken"></span></h3>
+
+    <br>
+    <h2>You can send messages to the LLM once you see token strings above</h2>
+
+    <br><h1>message input</h1>
+    <input type="text" id="messageInput" />
+    <button id="sendButton">Send Message</button>
+    <br><br>
+
+    <h1>MESSAGES BELOW</h1>
+    <ul id="messagesList"></ul>
+
+    <script type="text/javascript">
+class APIConnection {
+  constructor() {
+    this.URL = "http://ec2-18-189-105-20.us-east-2.compute.amazonaws.com/api/";
+    this.authorized = false;
+    this.data = {};
+    this.chatConnection = new signalR.HubConnectionBuilder()
+      .withUrl("/chat", { accessTokenFactory: () => this.token })
+      .build();
+    
+
+    let localRefreshToken = window.localStorage.getItem("hearth-jwt-refresh-token");
+    if (localRefreshToken != undefined) { //we already have a token (user has logged in recently)
+      this.refresh = localRefreshToken;
+      this.refreshTokens().then((isAuthorized) => {
+        if (isAuthorized) this.chatConnection.start()
+      })
+    }
+  }
+
+  getClaims() {
+    let base64 = this.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    this.claims = JSON.parse(jsonPayload)
+    this.email = this.claims.email
+  }
+
+  async updateDocument() {
+
+    if (this.authorized) {
+      window.localStorage.setItem("hearth-jwt-refresh-token", this.refresh);
+
+      if (this.claims === undefined) this.getClaims();
+      document.getElementById("email").value = this.claims.email;
+    } else {
+      window.localStorage.removeItem("hearth-jwt-refresh-token");
+      this.refresh = undefined;
+    }
+
+    document.getElementById("accessToken").innerText = this.token;
+    document.getElementById("refreshToken").innerText = this.refresh;
+  }
+
+  async getOneTimeCode(email, password) {
+    const res = await fetch(this.URL + "auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      body: `{
+        "email": "${email}",
+        "password": "${password}"
+      }`,
+    });
+    if (res.ok) this.email = email;
+    return res.ok
+  }
+
+  async verifyOneTimeCode(code) {
+    let response = await fetch(this.URL + `auth/${this.email}/${code}`, {
+      method: "POST",
+      headers: {
+        Accept: "*/*",
+      },
+    });
+
+    if (this.authorized = response.ok) {
+      let data = await response.json();
+      this.token = data.accessToken;
+      this.refresh = data.refreshToken;
+    }
+    this.updateDocument()
+    return this.authorized
+  }
+
+  async getPatientData(property) {
+    if (!this.authorized) return "Unauthorized"
+
+    let path = this.URL + "patient";
+    if (property !== undefined) {
+      path += `/${property}`;
+    }
+
+    let response = await fetch(path, {
+      method: "GET",
+      headers: {
+        Accept: "*/*",
+        Authorization: `Bearer ${this.token}`,
+      },
+    });
+
+    if (!response.ok) return "Error"
+
+    let dataObject = await response.json();
+
+    if (property === undefined) return this.data = dataObject;
+    else return this.data[property] = dataObject[property];
+  }
+
+  async postPatientData(dataObject) {
+    if (!this.authorized) return "Unauthorized";
+    
+    return fetch(this.URL + "patient", {
+      method: "POST",
+      headers: {
+        Accept: "*/*",
+        "Content-Type": "application/json-patch+json",
+        Authorization: `Bearer ${this.token}`,
+      },
+      body: JSON.stringify(dataObject),
+    });
+  }
+
+  async getModelResponse(input) {
+    if (!this.authorized) return "Unauthorized"
+
+    if (this.chatConnection.state !== "Connected") {
+      await this.chatConnection.start();
+    }
+    return this.chatConnection.invoke("SendMessage", input);
+
+  }
+
+  async refreshTokens() {
+    let response = await fetch(this.URL + `auth/refresh-tokens`, {
+      method: "POST",
+      headers: {
+        Accept: "*/*",
+        "Content-Type": "application/json-patch+json"
+      },
+      body: `"${this.refresh}"`
+    });
+
+    if (this.authorized = response.ok) {
+      let data = await response.json();
+      this.token = data.accessToken;
+      this.refresh = data.refreshToken;
+    }
+
+    this.updateDocument();
+    return this.authorized
+    
+  }
+}
+
+//Usage:
+user = new APIConnection();
+
+//data will attempt to populate from localStorage. if succesful, user.authorized = true
+
+
+//user.getOneTimeCode("ryanbhillis@gmail.com", "stringSTRING123!@#"); //WE NEVER STORE THE USER'S PASSWORD
+//user.verifyOneTimeCode(1864); //get the tokens and sets user.authorized = true
+
+//let userData = await user.getPatientData(); //userData =  {age: "21", weight: "180"}
+//let userAge = await user.getPatientData("age"); //userAge = "21"
+
+//user.getPatientData() also modifies the user object itself
+//user.data = {age: '21', weight: '170'}
+
+//to save data to the server
+//user.postPatientData({ height: 70, sex: "male"})
+
+
+//to talk to the LLM
+//user.getModelResponse("I am not feeling well and my leg hurts")
+
+//to handle the LLM response
+//user.chatConnection.on("ReceiveMessage", message => {
+//   alert(message)
+// })
+
+//after 10 minutes, the access token will expire and we will have to request another one
+//user.refreshTokens()
+
+
+//example implementation of APIConnection()
+document.getElementById("loginButton").addEventListener("click", () => {
+  let email = document.getElementById("email").value
+  let password = document.getElementById("password").value
+  user.getOneTimeCode(email, password)
+})
+
+document.getElementById("otcButton").addEventListener("click", () => {
+  let oneTimeCode = document.getElementById("otc").value
+  user.verifyOneTimeCode(oneTimeCode)
+})
+
+document.getElementById("sendButton").addEventListener("click", function () {
+    let input = document.getElementById("messageInput").value
+    user.getModelResponse(input)
+});
+
+// Receive messages from the server
+user.chatConnection.on("ReceiveMessage", (modelResponse) => {
+    let li = document.createElement("li");
+    li.textContent = `${modelResponse}`;
+    document.getElementById("messagesList").appendChild(li);
+});
+
+
+//TODO FOR ROSSMAN:
+//getting accessTokens by calling user.refreshTokens()
+//If you ever get a bad result from a user method (i.e. false, "Unauthorized", etc.):
+//    You have to call user.refreshTokens()
+//    if it returns true you're good, try again
+//    if it returns false you need to have the user log in again
+
+//While you are using the chat service, my server will update the tokens for you
+//You only need to worry about the API.
+    </script>
   </body>
 </html>
