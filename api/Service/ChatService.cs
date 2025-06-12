@@ -29,7 +29,7 @@ namespace api.Service {
         public Task RemoveClient(string id) {
         }
 
-        public SendMessage(string connId, string query) {
+        public Task SendMessage(string connId, string query) {
 
             var userId = CONNECTIONS[connId];
 
@@ -47,7 +47,7 @@ namespace api.Service {
                 "chats": "{fullQuery}"
             """ + "}";
 
-            _webSocket.SendAsync(chatString);
+            return await _webSocket.SendAsync(chatString);
         }
     }
 }
