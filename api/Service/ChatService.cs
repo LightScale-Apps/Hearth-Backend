@@ -35,20 +35,26 @@ namespace api.Service {
             Console.WriteLine($"We found a history of {chatsToSend.Count}");
 
             string fullQuery = "";
-            
+
             foreach(var chat in chatsToSend) {
                 var s = $"User: {chat.Query}\nAssistant: {chat.Response}\n";
                 fullQuery += s;
             }
             fullQuery += $"User: {query}\n";
 
-            var chatString = "{" + $"""
+            fullQuery = "{" + $"""
                 "chats": "{fullQuery}"
             """ + "}";
             Console.WriteLine(fullQuery);
-            Console.WriteLine(chatString);
 
-            await _webSocket.SendAsync(chatString);
+
+            byte[] messageBytes = Encoding.UTF8.GetBytes(fullQuery);
+            await _webSocket.SendAsync(
+                new ArraySegment<byte>(messageBytes),
+                WebSocketMessageType.Text,
+                false,
+                _cancellationTokenSource.
+            );
         }
     }
 }
