@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Net.WebSockets;
+using api.Interfaces;
 
 public class ChatHub : Hub
 {
