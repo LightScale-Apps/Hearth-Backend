@@ -4,7 +4,7 @@ using System.Net.WebSockets;
 public class ChatHub : Hub
 {
     private readonly IChatService _chatService;
-    public ChatHub(IChatService cs) { _chatService = cs }
+    public ChatHub(IChatService cs) { _chatService = cs; }
 
 
     public async Task SendMessage(string message)
