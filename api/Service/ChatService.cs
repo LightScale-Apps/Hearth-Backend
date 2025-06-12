@@ -15,7 +15,7 @@ namespace api.Service {
         private Dictionary<string, string> CONNECTIONS;
 
         private readonly ApplicationDBContext _context;
-        private WebSocket _webSocket;
+        private ClientWebSocket _webSocket;
 
         public ChatService(ApplicationDBContext c) {
             _context = c;
