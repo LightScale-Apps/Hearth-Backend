@@ -28,7 +28,7 @@ namespace api.Service {
             _webSocket.ConnectAsync(new Uri("ws://3.148.141.81/ws"), _cancellationTokenSource.Token);
         }
 
-        public async string SendMessage(string userId, string query) {
+        public async Task<string> SendMessage(string userId, string query) {
  
             var allChats = _context.ChatHistory.AsQueryable();
             var chatsToSend = await allChats.Where(s => s.OwnedBy.Equals(userId)).ToListAsync();
@@ -39,7 +39,7 @@ namespace api.Service {
             foreach(var chat in chatsToSend) {
                 fullQuery += $"User: {chat.Query}\nAssistant: {chat.Response}\n";            
             }
-            
+
             fullQuery = "{" + $"""
                 "chats": "{fullQuery}User: {query}{'\n'}"
             """ + "}";

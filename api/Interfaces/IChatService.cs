@@ -8,7 +8,7 @@ namespace api.Interfaces
 {
     public interface IChatService
     {
-        string SendMessage(string connectionId, string query);
+        Task<string> SendMessage(string connectionId, string query);
         // Task AddClient(string connectionId);
         // Task RemoveClient(string connectionId);
     }
