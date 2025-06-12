@@ -15,13 +15,17 @@ namespace api.Service {
         private Dictionary<string, string> CONNECTIONS;
 
         private readonly ApplicationDBContext _context;
+
         private ClientWebSocket _webSocket;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public ChatService(ApplicationDBContext c) {
             _context = c;
 
+            _cancellationTokenSource = new CancellationTokenSource();
+
             _webSocket = new ClientWebSocket();
-            _webSocket.ConnectAsync(new Uri("ws://3.148.141.81/ws"));
+            _webSocket.ConnectAsync(new Uri("ws://3.148.141.81/ws"), _cancellationTokenSource.Token);
         }
 
         public void SendMessage(string connId, string query) {
