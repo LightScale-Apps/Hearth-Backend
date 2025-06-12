@@ -10,9 +10,9 @@ public class ChatHub : Hub
 
     public async Task SendMessage(string message)
     {
-        //var response = await _chatService.SendMessage(Context.ConnectionId, message);
+        string response = await _chatService.SendMessage(Context.ConnectionId, message);
 
-        await Clients.Caller.SendAsync("ReceiveMessage", message);
+        await Clients.Caller.SendAsync("ReceiveMessage", response);
         //then add the query and the response to the chat history
     }
 
