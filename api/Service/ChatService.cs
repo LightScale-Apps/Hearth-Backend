@@ -53,7 +53,7 @@ namespace api.Service {
                 new ArraySegment<byte>(messageBytes),
                 WebSocketMessageType.Text,
                 false,
-                _cancellationTokenSource.
+                _cancellationTokenSource.Token
             );
         }
     }
