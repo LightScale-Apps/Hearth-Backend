@@ -28,24 +28,27 @@ namespace api.Service {
             _webSocket.ConnectAsync(new Uri("ws://3.148.141.81/ws"), _cancellationTokenSource.Token);
         }
 
-        public void SendMessage(string connId, string query) {
-            // var userId = CONNECTIONS[connId];
+        public async void SendMessage(string userId, string query) {
+ 
+            var allChats = _context.ChatHistory.AsQueryable();
+            var chatsToSend = await allChats.Where(s => s.OwnedBy.Equals(userId)).ToListAsync();
+            Console.WriteLine($"We found a history of {chatsToSend.Count}");
 
-            // var allChats = _context.ChatHistory.AsQueryable();
-            // var chatsToSend = await allChats.Where(s => s.OwnedBy.Equals(userId)).ToListAsync();
+            string fullQuery = "";
+            
+            foreach(var chat in chatsToSend) {
+                var s = $"User: {chat.Query}\nAssistant: {chat.Response}\n";
+                fullQuery += s;
+            }
+            fullQuery += $"User: {query}\n";
 
-            // string fullQuery = "";
-            // foreach(var chat in chatsToSend) {
-            //     var s = $"User: {chat.Query}\nAssistant: {chat.Response}\n";
-            //     fullQuery += s;
-            // }
-            // fullQuery += $"User: {query}\n";
+            var chatString = "{" + $"""
+                "chats": "{fullQuery}"
+            """ + "}";
+            Console.WriteLine(fullQuery);
+            Console.WriteLine(chatString);
 
-            // var chatString = "{" + $"""
-            //     "chats": "{fullQuery}"
-            // """ + "}";
-
-            // return await _webSocket.SendAsync(chatString);
+            await _webSocket.SendAsync(chatString);
         }
     }
 }
