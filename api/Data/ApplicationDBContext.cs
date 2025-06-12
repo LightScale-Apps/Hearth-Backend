@@ -19,6 +19,7 @@ namespace api.Data
 
         public DbSet<PatientData> PatientData { get; set; }
         public DbSet<RefreshToken> RefreshTokens {get; set; }
+        public DbSet<ChatHistory> ChatHistory {get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
