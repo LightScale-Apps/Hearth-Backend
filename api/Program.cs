@@ -114,6 +114,7 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<IDataRepository, DataRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddSingleton<IChatService, ChatService>();
 
 
 var app = builder.Build();
