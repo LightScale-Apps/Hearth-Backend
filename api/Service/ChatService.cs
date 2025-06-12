@@ -24,8 +24,7 @@ namespace api.Service {
             _webSocket.ConnectAsync(new Uri("ws://3.148.141.81/ws"));
         }
 
-        public Task SendMessage(string connId, string query) {
-            return Ok();
+        public void SendMessage(string connId, string query) {
             // var userId = CONNECTIONS[connId];
 
             // var allChats = _context.ChatHistory.AsQueryable();
