@@ -11,34 +11,44 @@ using Microsoft.IdentityModel.Tokens;
 using System.Net.WebSockets;
 
 namespace api.Service {
-    public class ChatService
+    public class ChatService : IChatService
     {
-        private readonly List<WebSocket> _sockets = new();
-   
+        private Dictionary<string, string> CONNECTIONS;
 
+        private readonly ApplicationDBContext _context;
+        private WebSocket _webSocket;
 
+        public ChatService(ApplicationDBContext c) {
+            _context = c;
 
-   
-       
-        // public async Task HandleWebSocketConnection(WebSocket socket, string userId)
-        // {
-        //     _sockets.Add(socket);
-        //     var buffer = new byte[1024 * 2];
-        //     while (socket.State == WebSocketState.Open)
-        //     {
-        //         var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), default);
-        //         if (result.MessageType == WebSocketMessageType.Close)
-        //         {
-        //             await socket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, default);
-        //             break;
-        //         }
-                
-        //         foreach (var s in _sockets)
-        //         {
-        //             await s.SendAsync(buffer[..result.Count], WebSocketMessageType.Text, true, default);
-        //         }
-        //     }
-        //     _sockets.Remove(socket);
-        // }
+            _webSocket = new WebSocket();
+            _webSocket.ConnectAsync(new Uri("ws://3.148.141.81/ws"));
+        }
+
+        public Task AddClient(string id) {
+        }
+        public Task RemoveClient(string id) {
+        }
+
+        public SendMessage(string connId, string query) {
+
+            var userId = CONNECTIONS[connId];
+
+            var allChats = _context.ChatHistory.AsQueryable();
+            var chatsToSend = await allChats.Where(s => s.OwnedBy.Equals(userId)).ToListAsync();
+
+            string fullQuery = "";
+            foreach(var chat in chatsToSend) {
+                var s = $"User: {chat.Query}\nAssistant: {chat.Response}\n";
+                fullQuery += s;
+            }
+            fullQuery += $"User: {query}\n";
+
+            var chatString = "{" + $"""
+                "chats": "{fullQuery}"
+            """ + "}";
+
+            _webSocket.SendAsync(chatString);
+        }
     }
 }

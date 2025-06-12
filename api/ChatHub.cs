@@ -3,16 +3,16 @@ using System.Net.WebSockets;
 
 public class ChatHub : Hub
 {
+    private readonly IChatService _chatService;
+    public ChatHub(IChatService cs) { _chatService = cs }
+
+
     public async Task SendMessage(string message)
     {
-        //get last 10 chats and then add the asked message to the end
+        //var response = await _chatService.SendMessage(Context.ConnectionId, message);
 
-        //send that to websocket and wait for response
-
-        //_webSocketChatService.doMyJobForMe();
-
-        await Clients.Caller.SendAsync("ReceiveMessage", modelResponse);
-
+        return await Clients.Caller.SendAsync("ReceiveMessage", message);
         //then add the query and the response to the chat history
     }
+
 }
