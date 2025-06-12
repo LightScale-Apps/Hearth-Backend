@@ -1,0 +1,8 @@
+public class ModelQueryService {
+	private WebSocket _modelWebSocket = new();
+
+	public string Query(string messageQuery) {
+		var queryResult = _modelWebSocket.send(messageQuery);
+		return queryResult;
+	}
+}
