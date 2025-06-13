@@ -10,12 +10,15 @@ namespace api.Models
     public class ChatHistory
     {
         public int Id { get; set; }
+        public DateTime Timestamp {get; set;} = DateTime.Now;
 
         public string OwnedBy {get; set;} = string.Empty;
         public string ChatName {get; set;} = string.Empty;
 
         public string Query {get; set;} = string.Empty;
         public string Response {get; set;} = string.Empty;
-        public DateTime Timestamp {get; set;}
+        
+        public string FeedbackResponse {get; set;} = string.Empty;
+        public int FeedbackScore {get; set;}
     }
 }

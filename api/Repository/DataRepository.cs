@@ -37,6 +37,17 @@ namespace api.Repository
 
             return await data.ToListAsync();
         }
+        public async Task<List<ChatHistory>> DebugChatHistoryAsync()
+        {
+            return await _context.ChatHistory.AsQueryable().ToListAsync();
+        }
+        public async Task<ChatHistory> AddChatHistoryAsync(ChatHistory chatHistoryEntry)
+        {
+            await _context.ChatHistory.AddAsync(chatHistoryEntry);
+            await _context.SaveChangesAsync();
+            return chatHistoryEntry;
+        }
+
         public async Task<List<AppUser>> DebugListUsersAsync()
         {
             var data = _context.Users.AsQueryable();

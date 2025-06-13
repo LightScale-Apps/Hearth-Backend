@@ -11,6 +11,8 @@ namespace api.Interfaces
     {
         Task<List<PatientData>> GetAllAsync(string userId);
         Task<List<PatientData>> DebugGetAllAsync();
+        Task<List<ChatHistory>> DebugChatHistoryAsync();
+        Task<ChatHistory> AddChatHistoryAsync(ChatHistory chatHistoryEntry);
         Task<List<AppUser>> DebugListUsersAsync();
         Task<List<PatientData>> GetPropertyAsync(string userId, string property);
         Task<PatientData> CreateAsync(PatientData patientDataModel);

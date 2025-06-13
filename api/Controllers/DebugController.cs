@@ -79,5 +79,18 @@ namespace api.Controllers
 
             return Ok(dataList);
         }
+
+        [HttpGet]
+        [Route("list-chats")]
+        public async Task<IActionResult> DebugListChatsAsync()
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+        
+            var dataList = await _context.ChatHistory.ToListAsync();
+
+            if (dataList == null) return NotFound();
+            return Ok(dataList);
+        }
     }
 }
