@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Service {
     public class ChatService : IChatService
+    
     {
         private Dictionary<string, string> CONNECTIONS;
 
